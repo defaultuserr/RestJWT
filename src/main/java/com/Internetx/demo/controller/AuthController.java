@@ -30,6 +30,8 @@ public class AuthController {
 @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthToken(@RequestBody AuthRequest authRequest) throws Exception {
         //wirft exception wenn etwas nicht stimm oder chain unterbrochen wurde
+    System.out.println(authRequest.getUsername());
+    System.out.println(authRequest.getPassword());
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
         }catch (DisabledException error){

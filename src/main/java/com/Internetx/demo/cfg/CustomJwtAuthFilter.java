@@ -1,6 +1,8 @@
 package com.Internetx.demo.cfg;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -14,30 +16,45 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 @Component
 public class CustomJwtAuthFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtility jwtUtility;
+
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain)
             throws ServletException, IOException {
         String jwtToken = extractJwtFromRequest(httpServletRequest);
-        if(StringUtils.hasText(jwtToken) && jwtUtility.validateJWTToken(jwtToken)){
-            //daten aus dem Token hoeln und create enw user
-            UserDetails userDetails = new User(jwtUtility.getUserNameFromToken(jwtToken), "", jwtUtility.getRolesFromToke(jwtToken));
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, "", jwtUtility.getRolesFromToke(jwtToken));
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        try {
 
-        }else {
-            System.out.println("Cant no set the sec context");
+
+            if (StringUtils.hasText(jwtToken) && jwtUtility.validateJWTToken(jwtToken)) {
+                //daten aus dem Token hoeln und create enw user
+                UserDetails userDetails = new User(jwtUtility.getUserNameFromToken(jwtToken), "", jwtUtility.getRolesFromToke(jwtToken));
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, "", jwtUtility.getRolesFromToke(jwtToken));
+                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+            } else {
+                System.out.println("Cant no set the sec context");
+
+            }
+
+        }catch (ExpiredJwtException ex){
+            httpServletRequest.setAttribute("exception", ex);
 
         }
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
+        catch (BadCredentialsException ex){
+            httpServletRequest.setAttribute("exception", ex);
+
+        }
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
 
     }
-    private String extractJwtFromRequest(HttpServletRequest request){
+
+    private String extractJwtFromRequest(HttpServletRequest request) {
         String bear = request.getHeader("Authorization");
-        if(StringUtils.hasText(bear) && bear.startsWith("Bearer ")){
+        if (StringUtils.hasText(bear) && bear.startsWith("Bearer ")) {
             //get the token of the response
             System.out.println(bear.substring(7));
             return bear.substring(7, bear.length());

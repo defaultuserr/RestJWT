@@ -8,15 +8,20 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecCfg extends WebSecurityConfigurerAdapter {
     @Autowired
     GetUserDetailsClass getUserDetailsClass;
-
+    @Autowired
+    private  CustomJwtAuthFilter customJwtAuthFilter;
+    @Autowired
+    private JwtEntryPoint jwtEntryPoint;
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -37,7 +42,9 @@ public class SpringSecCfg extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests().antMatchers("/helloadmin").hasRole("ADMIN").
                 antMatchers("/helloUser").
-                hasAnyRole("USER", "ADMIN").antMatchers("/login").permitAll().anyRequest().authenticated().and().httpBasic();
+                hasAnyRole("USER", "ADMIN").antMatchers("/login").permitAll().anyRequest().authenticated().and()
+                .exceptionHandling().authenticationEntryPoint(jwtEntryPoint).and().sessionManagement().
+                sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().addFilterBefore(customJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
     }
 

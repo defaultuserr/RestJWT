@@ -67,9 +67,10 @@ public class JwtUtility {
 
             Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(toky);
             return true;
-        } catch (Exception e ) {
-            throw new BadCredentialsException("INvalid cre", e);
-
+        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
+            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+        } catch (ExpiredJwtException ex) {
+            throw new BadCredentialsException("Token expired");
         }
 
     }

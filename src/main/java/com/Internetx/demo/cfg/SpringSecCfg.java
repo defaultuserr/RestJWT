@@ -17,11 +17,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SpringSecCfg extends WebSecurityConfigurerAdapter {
     @Autowired
-    GetUserDetailsClass getUserDetailsClass;
+    GetUserDetailsService getUserDetailsService;
     @Autowired
     private  CustomJwtAuthFilter customJwtAuthFilter;
     @Autowired
     private JwtEntryPoint jwtEntryPoint;
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -33,16 +35,18 @@ public class SpringSecCfg extends WebSecurityConfigurerAdapter {
 
     }
 
+
+
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(getUserDetailsClass).passwordEncoder(passwordEncoder());
+        auth.userDetailsService(getUserDetailsService).passwordEncoder(passwordEncoder());
 
     }
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests().antMatchers("/helloadmin").hasRole("ADMIN").
                 antMatchers("/helloUser").
-                hasAnyRole("USER", "ADMIN").antMatchers("/login").permitAll().anyRequest().authenticated().and()
+                hasAnyRole("USER", "ADMIN").antMatchers("/login", "/register").permitAll().anyRequest().authenticated().and()
                 .exceptionHandling().authenticationEntryPoint(jwtEntryPoint).and().sessionManagement().
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().addFilterBefore(customJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

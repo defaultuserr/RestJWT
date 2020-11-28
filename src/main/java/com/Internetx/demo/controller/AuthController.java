@@ -1,10 +1,11 @@
 package com.Internetx.demo.controller;
 
 
-import com.Internetx.demo.cfg.GetUserDetailsClass;
+import com.Internetx.demo.cfg.GetUserDetailsService;
 import com.Internetx.demo.cfg.JwtUtility;
 import com.Internetx.demo.model.AuthRequest;
 import com.Internetx.demo.model.AuthResponse;
+import com.Internetx.demo.model.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,9 +23,10 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private GetUserDetailsClass getUserDetailsClass;
+    private GetUserDetailsService getUserDetailsService;
     @Autowired
     private JwtUtility jwtUtility;
+
 
 
 @RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -40,10 +42,14 @@ public class AuthController {
         }catch (BadCredentialsException error){
             throw new Exception("BAD CREDENTIALS", error);
         }
-        final UserDetails userdetails = getUserDetailsClass.loadUserByUsername(authRequest.getUsername());
+        final UserDetails userdetails = getUserDetailsService.loadUserByUsername(authRequest.getUsername());
         final String token = jwtUtility.generateToke(userdetails);
         return ResponseEntity.ok(new AuthResponse(token));
 
+    }
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public ResponseEntity<?> saveUser(@RequestBody UserDTO user) throws Exception {
+        return ResponseEntity.ok(getUserDetailsService.save(user));
     }
 
 

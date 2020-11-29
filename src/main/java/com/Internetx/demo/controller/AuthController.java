@@ -1,11 +1,12 @@
 package com.Internetx.demo.controller;
 
 
+import com.Internetx.demo.Repository.JDBCHandling;
 import com.Internetx.demo.cfg.GetUserDetailsService;
 import com.Internetx.demo.cfg.JwtUtility;
 import com.Internetx.demo.model.AuthRequest;
 import com.Internetx.demo.model.AuthResponse;
-import com.Internetx.demo.model.UserDTO;
+import com.Internetx.demo.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +28,11 @@ public class AuthController {
     @Autowired
     private JwtUtility jwtUtility;
 
+    @Autowired
+    private JDBCHandling jdbcHandling;
+
+
+
 
 
 @RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -47,9 +53,10 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
 
     }
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public ResponseEntity<?> saveUser(@RequestBody UserDTO user) throws Exception {
-        return ResponseEntity.ok(getUserDetailsService.save(user));
+    @RequestMapping(value = "/user", method = RequestMethod.POST)
+    public ResponseEntity<?> saveUser(@RequestBody UserModel user) throws Exception {
+       // return ResponseEntity.ok(getUserDetailsService.save(user));
+        return  ResponseEntity.ok(getUserDetailsService.saveTo(user));
     }
 
 

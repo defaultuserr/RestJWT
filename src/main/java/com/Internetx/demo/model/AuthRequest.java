@@ -2,19 +2,19 @@ package com.Internetx.demo.model;
 
 public class AuthRequest {
     public AuthRequest(String username, String password) {
-        this.username = username;
+        this.login = username;
         this.password = password;
     }
     public AuthRequest() {
 
     }
 
-    public String getUsername() {
-        return username;
+    public String getLogin() {
+        return login;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     public String getPassword() {
@@ -25,7 +25,7 @@ public class AuthRequest {
         this.password = password;
     }
 
-    private String username;
+    private String login;
     private String password;
 
 }

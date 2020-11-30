@@ -10,7 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class JDBCHandling {
@@ -29,12 +29,65 @@ public class JDBCHandling {
     PreparedStatement statement = null;
     Connection conn = null;
 
+
+    public String deleteUserById(int id) {
+
+        Statement std;
+        String total = "";
+        try {
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            String statementSt = "Delete  from  user where id = \" " + id + "  \"";
+            statement = conn.prepareStatement(statementSt);
+
+            statement.executeUpdate();
+            //STEP 3: Open a connection
+            return "User with id " + id + "deleted";
+
+
+        } catch (Exception e) {
+            System.out.print("in getuser by id " + e);
+            return "did not work";
+        }
+
+
+    }
+
+    public String getUserById(int id) {
+        Statement std;
+        String total = "";
+        try {
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            String statement = "Select * from  user where id = \" " + id + "  \"";
+
+            std = conn.createStatement();
+            ResultSet rs = std.executeQuery(statement);
+            //STEP 3: Open a connection
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnsNumber = rsmd.getColumnCount();
+
+            while (rs.next()) {
+                for (int i = 1; i <= columnsNumber; i++) {
+                    if (i > 1) System.out.print(",  ");
+                    String columnValue = rs.getString(i);
+                    total += columnValue + " is " + rsmd.getColumnName(i) + ", ";
+                    //System.out.print();
+                }
+            }
+
+
+        } catch (Exception e) {
+            System.out.print("in getuser by id " + e);
+        }
+        return total;
+    }
+
     public ResponseEntity<String> insertUser(UserModel userModel) {
         String login = userModel.getLoginName();
         String password = userModel.getPassword();
         String fname = userModel.getF_name();
         String lname = userModel.getL_name();
         String email = userModel.getEmail();
+
 
 
         try {
@@ -78,10 +131,89 @@ public class JDBCHandling {
         return ResponseEntity.ok("it is ok");
 
     }
+
     public List<SimpleGrantedAuthority> getRoles(int id) {
+        Statement std;
+        HashMap<Roles, Integer> roles = new HashMap<Roles, Integer>();
+        try {
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            String statement = "Select * from role where user_id = " + id;
+
+            std = conn.createStatement();
+            ResultSet rs = std.executeQuery(statement);
+            int role_admin;
+            int role_develop;
+            int role_cctld;
+            int role_gtld;
+            int role_billing;
+            int role_registry;
+            int role_purchase_read;
+            int role_purchase_write;
+            int role_sale_write;
+            int role_sql;
+            while (rs.next()) {
+                //Retrieve by column name
+                id = rs.getInt("id");
+                role_admin = rs.getInt("role_admin");
+                roles.put(Roles.ROLE_ADMIN, role_admin);
+                role_develop = rs.getInt("role_develop");
+                roles.put(Roles.ROLE_DEVELOP, role_develop);
+                role_cctld = rs.getInt("role_cctld");
+                roles.put(Roles.ROLE_CCTLD, role_cctld);
+                role_gtld = rs.getInt("role_gtld");
+                roles.put(Roles.ROLE_GTLD, role_gtld);
+                role_billing = rs.getInt("role_billing");
+                roles.put(Roles.ROLE_BILLING, role_billing);
+                role_registry = rs.getInt("role_registry");
+                roles.put(Roles.ROLE_REGISTRY, role_registry);
+                role_purchase_read = rs.getInt("role_purchase_read");
+                roles.put(Roles.ROLE_PURCHASE_READ, role_purchase_read);
+                role_purchase_write = rs.getInt("role_purchase_write");
+                roles.put(Roles.ROLE_PURCHASE_WRITE, role_purchase_write);
+                role_sale_write = rs.getInt("role_sale_write");
+                roles.put(Roles.ROLE_SALE_WRITE, role_sale_write);
+                role_sql = rs.getInt("role_sql");
+                roles.put(Roles.ROLE_SQL, role_sql);
+
+                // matchSQLtoRoles(roles);
 
 
-      Hier bin ich und muss mit der id die rollen bekommen   
+            }
+        } catch (Exception e) {
+            System.out.print("excetpi  " + e);
+
+
+        }
+
+
+        return matchSQLtoRoles(roles);
+    }
+
+    public enum Roles {
+        ROLE_ADMIN, ROLE_DEVELOP, ROLE_CCTLD, ROLE_GTLD, ROLE_BILLING, ROLE_REGISTRY, ROLE_PURCHASE_READ, ROLE_PURCHASE_WRITE, ROLE_SALE_WRITE, ROLE_SQL
+
+
+    }
+
+    private List<SimpleGrantedAuthority> matchSQLtoRoles(HashMap<Roles, Integer> list) {
+        System.out.print("Match sql to roles");
+        System.out.print(Roles.ROLE_CCTLD.toString());
+        List<SimpleGrantedAuthority> roles = new ArrayList<>();
+        for (Roles role : Roles.values()) {
+            String temp = role.toString();
+            if (list.get(role) == 1 && temp != null) {
+                roles.add(new SimpleGrantedAuthority(temp));
+
+
+            }
+
+
+            System.out.print(list.get(role));
+
+        }
+
+
+        return roles;
     }
 
     public UserModel getUserFromMySQL(String s) {
@@ -91,7 +223,7 @@ public class JDBCHandling {
 
         try {
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
-            String statement = "Select * from users where name = " + s;
+            String statement = "Select * from user where login = \"" + s + " \"";
             std = conn.createStatement();
             ResultSet rs = std.executeQuery(statement);
             int id = 0;
@@ -111,7 +243,7 @@ public class JDBCHandling {
                 email = rs.getString("email");
 
             }
-            UserModel tempUserModel = new UserModel( loginName, password,id, f_name, l_name, email);
+            UserModel tempUserModel = new UserModel(loginName, password, id, f_name, l_name, email);
             return tempUserModel;
 
 

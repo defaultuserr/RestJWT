@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,7 +22,7 @@ public class SpringSecCfg extends WebSecurityConfigurerAdapter {
     @Autowired
     GetUserDetailsService getUserDetailsService;
     @Autowired
-    private  CustomJwtAuthFilter customJwtAuthFilter;
+    private CustomJwtAuthFilter customJwtAuthFilter;
     @Autowired
     private JwtEntryPoint jwtEntryPoint;
 
@@ -29,16 +30,14 @@ public class SpringSecCfg extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception{
+    public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
 
 
     }
-
-
-
 
 
     @Override
@@ -46,21 +45,22 @@ public class SpringSecCfg extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(getUserDetailsService).passwordEncoder(passwordEncoder());
 
     }
+
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().authorizeRequests().antMatchers("/helloadmin").hasRole("ADMIN").
-                antMatchers("/helloUser").
-                hasAnyRole("USER", "ADMIN").antMatchers("/login", "/user").permitAll().anyRequest().authenticated().and()
-                .exceptionHandling().authenticationEntryPoint(jwtEntryPoint).and().sessionManagement().
+        http.csrf().disable().
+                authorizeRequests().antMatchers("/helloadmin").hasRole("ADMIN").
+                antMatchers("/hellouser").permitAll().
+                //hasAnyRole("ROLE_ADMIN", "ADMIN").
+                antMatchers("/login").permitAll().
+                antMatchers("/user/{id}").hasRole("ADMIN").
+                antMatchers(HttpMethod.DELETE).hasRole("ADMIN").
+                anyRequest(). authenticated().and()
+                .exceptionHandling().
+                authenticationEntryPoint(jwtEntryPoint).and().sessionManagement().
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().addFilterBefore(customJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
     }
-
-
-
-
-
-
 
 
 }

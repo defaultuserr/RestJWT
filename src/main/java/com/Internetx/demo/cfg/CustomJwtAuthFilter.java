@@ -53,6 +53,7 @@ public class CustomJwtAuthFilter extends OncePerRequestFilter {
     }
 
     private String extractJwtFromRequest(HttpServletRequest request) {
+        System.out.print("extracJWT FROM REQUEST");
         String bear = request.getHeader("Authorization");
         if (StringUtils.hasText(bear) && bear.startsWith("Bearer ")) {
             //get the token of the response

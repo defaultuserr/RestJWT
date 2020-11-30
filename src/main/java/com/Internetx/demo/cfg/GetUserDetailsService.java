@@ -32,17 +32,21 @@ public class GetUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+        System.out.print("load user By Usernme");
         List<SimpleGrantedAuthority> roles = null;
 
 
-
-
-
-
-
         UserModel myRetrievedUser = jdbcHandling.getUserFromMySQL(s);
-
         int id = myRetrievedUser.getId();
+
+        List<SimpleGrantedAuthority> rolly = jdbcHandling.getRoles(id);
+
+        if(id > 0 ) {
+
+            return new User(myRetrievedUser.getLoginName(), passwordEncoder.encode( myRetrievedUser.getPassword()), rolly);
+
+        }
+
 
         //DAOUser user = userDao.findByUsername(s);
         //DAOUser user = plainSQLInterface.findUserUsingRollNo(s).get(0);
@@ -51,16 +55,16 @@ public class GetUserDetailsService implements UserDetailsService {
 
         if (myRetrievedUser != null) {
 
-            roles = Arrays.asList(new SimpleGrantedAuthority(""));
+           // roles = Arrays.asList(new SimpleGrantedAuthority(""));
             //roles = Arrays.asList(new SimpleGrantedAuthority(user.getRole()));
             //return new User(user.getUsername(), user.getPassword(), roles);
         }
 
 
-        if(s.equals("admin")){
-            roles = Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            return new User("nameadmin", "$2y$12$I0Di/vfUL6nqwVbrvItFVOXA1L9OW9kLwe.1qDPhFzIJBpWl76PAe", roles);
-        }
+       // if(s.equals("admin")){
+         //   roles = Arrays.asList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+           // return new User("nameadmin", "$2y$12$I0Di/vfUL6nqwVbrvItFVOXA1L9OW9kLwe.1qDPhFzIJBpWl76PAe", roles);
+        //}
         if(s.equals("user")){
             roles = Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
             return new User("nameuser", "$2y$12$VfZTUu/Yl5v7dAmfuxWU8uRfBKExHBWT1Iqi.s33727NoxHrbZ/h2", roles);

@@ -13,10 +13,14 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
 
 @RestController
 public class AuthController {
@@ -52,10 +56,16 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
 
     }
+
+
+
     @RequestMapping(value = "/user", method = RequestMethod.POST)
     public ResponseEntity<?> saveUser(@RequestBody UserAndRoleModel userAndRole) throws Exception {
        // return ResponseEntity.ok(getUserDetailsService.save(user));
-        return  ResponseEntity.ok(getUserDetailsService.saveTo(userAndRole.getUserModel()));
+
+
+
+        return  getUserDetailsService.saveTo(userAndRole);
     }
 
 

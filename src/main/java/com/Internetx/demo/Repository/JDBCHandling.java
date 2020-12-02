@@ -1,11 +1,12 @@
 package com.Internetx.demo.Repository;
 
+
+import com.Internetx.demo.Util;
+import com.Internetx.demo.model.UserAndRoleModel;
 import com.Internetx.demo.model.UserModel;
-import io.jsonwebtoken.ExpiredJwtException;
-import org.apache.catalina.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,9 @@ import java.util.*;
 public class JDBCHandling {
 
     static String DB_URL = "";
+
+    @Autowired
+    Util util;
 
     @Value("${spring.datasource.url}")
     public void setUrl(String url) {
@@ -29,6 +33,44 @@ public class JDBCHandling {
     PreparedStatement statement = null;
     Connection conn = null;
 
+    public String updateUserById(int id, UserModel userModel) {
+
+        Statement std;
+        LinkedHashMap<String, String> temp = util.analyzeUserModel(userModel);
+        String statement = "update user set ";
+
+        for (Map.Entry<String,String> entry : temp.entrySet()) {
+
+            String key = entry.getKey();
+            if(key =="Id")continue;
+            String value = entry.getValue();
+
+            statement += key +  " =  \"" + value + "\" ,";
+            // now work with key and value...
+        }
+
+        statement = (statement.substring(0, statement.length() - 1));
+        statement +="where id = " +  id ;
+
+        try {
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            this.statement = conn.prepareStatement(statement);
+            this.statement.executeUpdate(statement);
+
+
+
+
+
+
+        } catch (Exception e) {
+
+
+        }
+
+
+        return "ok";
+    }
 
     public String deleteUserById(int id) {
 
@@ -51,6 +93,65 @@ public class JDBCHandling {
 
 
     }
+
+    private int matchBooleanToTinyInt(String set) {
+        if (set == "true") return 1;
+        else return 0;
+
+    }
+
+    public void insertRoleSet(UserAndRoleModel roleModel) {
+        //order is important
+        LinkedHashMap<String, Boolean> resultsHashMap = util.analyze(roleModel.getRoleModel());
+
+        int userId = roleModel.getUserModel().getId();
+
+        try {
+            //STEP 2: Register JDBC driver
+            //Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            //STEP 3: Open a connection
+            statement = conn.prepareStatement("INSERT INTO role (user_id,role_admin, role_develop ,role_cctld, role_gtld, role_billing, role_registry, role_purchase_read, role_purchase_write, role_sale_write, role_sql ) Values (" + userId + ", ?, ?, ?, ?,?,?,?,?,?,?)");
+            int temp = 1;
+
+            for (Map.Entry<String, Boolean> entry : resultsHashMap.entrySet()) {
+
+                statement.setString(temp, "" + matchBooleanToTinyInt(String.valueOf(entry.getValue())));
+                temp++;
+            }
+
+            try {
+                statement.executeUpdate();
+            } catch (SQLIntegrityConstraintViolationException e) {
+                System.out.println("error in execute update " + e);
+                return;
+            }
+            System.out.println("Inserted records into the table...");
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (statement != null)
+                    conn.close();
+            } catch (SQLException se) {
+            }// do nothing
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }//end try
+
+
+    }
+
 
     public String getUserById(int id) {
         Statement std;
@@ -81,13 +182,14 @@ public class JDBCHandling {
         return total;
     }
 
-    public ResponseEntity<String> insertUser(UserModel userModel) {
-        String login = userModel.getLoginName();
+    public long
+    insertUser(UserModel userModel) throws SQLException {
+        String login = userModel.getLogin();
         String password = userModel.getPassword();
         String fname = userModel.getF_name();
         String lname = userModel.getL_name();
         String email = userModel.getEmail();
-
+        long userId = 0;
 
 
         try {
@@ -95,15 +197,26 @@ public class JDBCHandling {
             //Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
             //STEP 3: Open a connection
-            statement = conn.prepareStatement("INSERT INTO user (login, password, fname, lname, email) Values (?, ?, ?, ?, ?)");
+            statement = conn.prepareStatement("INSERT INTO user (login, password, fname, lname, email) Values (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, login);
             statement.setString(2, password);
             statement.setString(3, fname);
             statement.setString(4, lname);
             statement.setString(5, email);
 
-            statement.executeUpdate();
+            int affectedRows = statement.executeUpdate();
             System.out.println("Inserted records into the table...");
+            if (affectedRows == 0) {
+                throw new SQLException("Creating user failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    userId = generatedKeys.getLong(1);
+                } else {
+                    throw new SQLException("Creating user failed, no ID obtained.");
+                }
+            }
 
         } catch (SQLException se) {
             //Handle errors for JDBC
@@ -128,7 +241,7 @@ public class JDBCHandling {
         System.out.println("Goodbye!");
 
 
-        return ResponseEntity.ok("it is ok");
+        return userId;
 
     }
 

@@ -186,8 +186,8 @@ public class JDBCHandling {
     insertUser(UserModel userModel) throws SQLException {
         String login = userModel.getLogin();
         String password = userModel.getPassword();
-        String fname = userModel.getF_name();
-        String lname = userModel.getL_name();
+        String fname = userModel.getFname();
+        String lname = userModel.getLname();
         String email = userModel.getEmail();
         long userId = 0;
 

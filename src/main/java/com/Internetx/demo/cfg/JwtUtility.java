@@ -51,7 +51,6 @@ public class JwtUtility {
     public String generateToke(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         //bekomme ich die rolen
-        System.out.println("hier bkomm ich rein");
         System.out.println(userDetails.getAuthorities());
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
 

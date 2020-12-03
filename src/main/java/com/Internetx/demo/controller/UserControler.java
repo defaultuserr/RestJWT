@@ -27,13 +27,13 @@ public class UserControler {
     @ResponseBody
     public String showUserWithId(@PathVariable("id") int id) {
         return jdbcHandling.getUserById(id);
-        //return "show user" + id;
-    }
-    @RequestMapping(value="/user/{id}", method =  RequestMethod.PUT)
-    @ResponseBody
-    public String updateUserWithId(@RequestBody UserModel userModel, @PathVariable("id") int id){
 
-        int i = 0;
+    }
+
+    @RequestMapping(value = "/user/{id}", method = RequestMethod.PUT)
+    @ResponseBody
+    public String updateUserWithId(@RequestBody UserModel userModel, @PathVariable("id") int id) {
+
         jdbcHandling.updateUserById(id, userModel);
 
         return "updated";
@@ -42,9 +42,11 @@ public class UserControler {
     @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public String deleteUserWithId(@PathVariable("id") int id) {
-         return jdbcHandling.deleteUserById(id);
+        return jdbcHandling.deleteUserById(id);
         //return "show user" + id;
     }
+
+
 
 
 }

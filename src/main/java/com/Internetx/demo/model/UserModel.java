@@ -5,16 +5,16 @@ public class UserModel {
 
     private String password;
     private int Id;
-    private String f_name;
-    private String l_name;
+    private String fname;
+    private String lname;
     private String email;
 
-    public UserModel(String login, String password, int id, String f_name, String l_name, String email) {
+    public UserModel(String login, String password, int id, String fname, String lname, String email) {
         this.login = login;
         this.password = password;
         this.Id = id;
-        this.f_name = f_name;
-        this.l_name = l_name;
+        this.fname = fname;
+        this.lname = lname;
         this.email = email;
     }
 
@@ -27,20 +27,20 @@ public class UserModel {
         Id = id;
     }
 
-    public String getF_name() {
-        return f_name;
+    public String getFname() {
+        return fname;
     }
 
-    public void setF_name(String f_name) {
-        this.f_name = f_name;
+    public void setFname(String fname) {
+        this.fname = fname;
     }
 
-    public String getL_name() {
-        return l_name;
+    public String getLname() {
+        return lname;
     }
 
-    public void setL_name(String l_name) {
-        this.l_name = l_name;
+    public void setLname(String lname) {
+        this.lname = lname;
     }
 
     public String getEmail() {

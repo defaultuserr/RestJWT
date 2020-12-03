@@ -46,16 +46,17 @@ public class SpringSecCfg extends WebSecurityConfigurerAdapter {
 
     }
 
+    //HIer ist die Security Config, ACL hier setzen
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().
                 authorizeRequests().antMatchers("/helloadmin").hasRole("ADMIN").
                 antMatchers("/hellouser").permitAll().
                 //hasAnyRole("ROLE_ADMIN", "ADMIN").
-                antMatchers("/login").permitAll().
+                        antMatchers("/login").permitAll().
                 antMatchers("/user/{id}").hasRole("ADMIN").
                 antMatchers(HttpMethod.DELETE).hasRole("ADMIN").
-                anyRequest(). authenticated().and()
+                anyRequest().authenticated().and()
                 .exceptionHandling().
                 authenticationEntryPoint(jwtEntryPoint).and().sessionManagement().
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().addFilterBefore(customJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
